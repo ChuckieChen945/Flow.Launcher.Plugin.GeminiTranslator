@@ -1,20 +1,20 @@
 {
-    "ID": "df432fe0-9ff7-4ba1-b0fd-5ffd26efbf86",
-    "ActionKeyword": "ai",
-    "Name": "ChatGPT",
-    "Description": "Plugin to use OpenAI's ChatGPT in Flow Launcher",
+    "ID": "df432fe0-9ff7-4ba1-b0fd-6gge37fgcg97",
+    "ActionKeyword": "g",
+    "Name": "Gemini Translator",
+    "Description": "Plugin to quickly use Gemini for English translation in Flow Launcher.",
     "Author": "MichielvanBeers",
     "Version": "1.3.0",
     "Language": "python",
-    "Website": "https://github.com/MichielvanBeers/Flow.Launcher.Plugin.ChatGPT",
+    "Website": "https://github.com/ChuckieChen945/Flow.Launcher.Plugin.GeminiTranslator",
     "IcoPath": "Images\\app.png",
     "ExecuteFileName": "main.py",
     "Settings": {
         "api_endpoint": {
             "type": "input",
             "label": "API Endpoint",
-            "defaultValue": "https://api.openai.com/v1/chat/completions",
-            "description": "Custom OpenAI API endpoint"
+            "defaultValue": "https://generativelanguage.googleapis.com/v1beta/openai/",
+            "description": "Custom Gemini API endpoint"
         }
     }
 }

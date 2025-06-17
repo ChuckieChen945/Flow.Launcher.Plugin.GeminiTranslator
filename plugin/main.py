@@ -97,7 +97,7 @@ class ChatGPT(Flox):
         self, prompt: str, system_message: str
     ) -> Tuple[str, datetime, datetime]:
         """
-        Query the OpenAI end-point
+        Query the Gemini end-point
         """
         url = self.api_endpoint
 
