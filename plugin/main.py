@@ -10,6 +10,9 @@ import requests  # noqa: E402
 import json  # noqa: E402
 import pyperclip  # noqa: E402
 from typing import Tuple, Optional
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import HumanMessage, SystemMessage
+
 
 PROXIES = {
     "http": os.environ.get("HTTP_PROXY", ""),
@@ -25,7 +28,7 @@ class ChatGPT(Flox):
         self.default_system_prompt = self.settings.get("default_prompt")
         self.save_conversation_setting = self.settings.get("save_conversation")
         self.log_level = self.settings.get("log_level")
-        self.api_endpoint = self.settings.get("api_endpoint")
+        # self.api_endpoint = self.settings.get("api_endpoint")
         self.logger_level(self.log_level)
 
         try:
@@ -37,6 +40,12 @@ class ChatGPT(Flox):
         except FileNotFoundError:
             self.prompts = None
             logging.error("Unable to open system_messages.csv")
+
+        self.llm = ChatGoogleGenerativeAI(
+            model=self.model,
+            google_api_key=self.api_key,
+        )
+
 
     def query(self, query: str) -> None:
         if not self.api_key:
@@ -99,51 +108,31 @@ class ChatGPT(Flox):
         """
         Query the Gemini end-point
         """
-        url = self.api_endpoint
-
-        headers = {
-            "Authorization": "Bearer " + self.api_key,
-            "Content-Type": "application/json",
-        }
-
-        body = {
-            "model": self.model,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": system_message,
-                },
-                {"role": "user", "content": prompt},
-            ],
-        }
-
-        data = json.dumps(body)
 
         prompt_timestamp = datetime.now()
-        logging.debug(f"Sending request with data: {data}")
+        result = ""
+
+        messages = [
+            SystemMessage(content=system_message),
+            HumanMessage(content=prompt),
+        ]
+
+        # logging.debug(f"Sending request with data: {messages}") FIXME
         try:
-            response = requests.request(
-                "POST", url, headers=headers, data=data, proxies=PROXIES
-            )
+            for chunk in self.llm.stream(messages):
+                if hasattr(chunk, "content"):
+                    result += chunk.content
         except UnicodeEncodeError as e:
-            logging.error(f"UnicodeEncodeError: {e}")
+            logging.error(f"Gemini API error: {e}")
+            self.add_item(
+                title="Gemini API Error",
+                subtitle=str(e),
+            )
             return "", prompt_timestamp, datetime.now()
 
-        logging.debug(f"Response: {response}")
+        logging.debug(f"Response: {result}")
         answer_timestamp = datetime.now()
 
-        result = ""
-        response_json = response.json()
-        if response.ok:
-            for entry in response_json["choices"]:
-                result += entry["message"]["content"]
-        else:
-            self.add_item(
-                title="An error occurred", subtitle=response_json["error"]["message"]
-            )
-            logging.error(
-                f"API returned {response.status_code} with message: {response_json}"
-            )
         return result, prompt_timestamp, answer_timestamp
 
     def save_conversation(
