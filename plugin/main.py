@@ -13,11 +13,21 @@ from typing import Tuple, Optional
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 import difflib
+import asyncio
+from edge_tts import Communicate
+from playsound import playsound
+
 
 PROXIES = {
     "http": os.environ.get("HTTP_PROXY", ""),
     "https": os.environ.get("HTTPS_PROXY", ""),
 }
+
+async def generate_tts_audio(text: str, filename: str = "output.mp3"):
+    communicate = Communicate(text, "en-GB-LibbyNeural")
+    await communicate.save(filename)
+
+
 
 def lcs_diff_align(a: str, b: str):
     sm = difflib.SequenceMatcher(None, a, b)
@@ -85,6 +95,14 @@ class Gemini(Flox):
             google_api_key=self.api_key,
         )
 
+    def play_audio(self, filename: str = "output.mp3") -> None:
+        try:
+            playsound(filename, block=True)
+            logging.debug(f"played successfully")
+
+        except Exception as e:
+            logging.error(f"Error playing audio silently: {e}")
+
 
     def query(self, query: str) -> None:
         if not self.api_key:
@@ -133,6 +151,18 @@ class Gemini(Flox):
                 )
                 return
 
+            # 调用 edge-tts 生成音频
+            try:
+                asyncio.run(generate_tts_audio(result, "output.mp3"))
+            except Exception as e:
+                logging.error(f"TTS Generation Error: {e}")
+
+            self.add_item(
+                title="🔊",
+                subtitle="",
+                method=self.play_audio,
+                parameters=["output.mp3"],
+            )
 
             filename = None
             if self.save_conversation_setting:
