@@ -20,7 +20,7 @@ PROXIES = {
 }
 
 
-class ChatGPT(Flox):
+class Gemini(Flox):
     def __init__(self):
         self.api_key = self.settings.get("api_key")
         self.model = self.settings.get("model")
@@ -66,34 +66,48 @@ class ChatGPT(Flox):
         if query.endswith(self.prompt_stop):
             prompt, prompt_keyword, system_message = self.split_prompt(query)
 
-            answer, prompt_timestamp, answer_timestamp = self.send_prompt(
-                prompt, system_message
-            )
+            # answer, prompt_timestamp, answer_timestamp = self.send_prompt(
+            #     prompt, system_message
+            # )
+
+            prompt_timestamp = datetime.now()
+            result = ""
+            # answer_timestamp = prompt_timestamp
+            messages = [
+                SystemMessage(content=system_message),
+                HumanMessage(content=prompt),
+            ]
+            messages_str = "\n".join([f"{type(m).__name__}: {m.content}" for m in messages])
+            logging.debug(f"Sending request with data: {messages_str}")
+            try:
+                for chunk in self.llm.stream(messages):
+                    if hasattr(chunk, "content"):
+                        result += chunk.content
+
+                        short_answer = self.ellipsis(result, 30)
+                        # FIXME: has no attribute 'clear_items'
+                        # self.clear_items()
+                        self.add_item(
+                            title="Streaming response (press Enter to copy)",
+                            subtitle=short_answer,
+                            method=self.copy_answer,
+                            parameters=[result],
+                        )
+                answer_timestamp = datetime.now()
+            except Exception as e:
+                logging.error(f"Gemini API error during stream: {e}")
+                self.add_item(
+                    title="Gemini API Error",
+                    subtitle=str(e),
+                )
+                return
+
 
             filename = None
             if self.save_conversation_setting:
                 filename = self.save_conversation(
-                    prompt_keyword, prompt, prompt_timestamp, answer, answer_timestamp
+                    prompt_keyword, prompt, prompt_timestamp, result, answer_timestamp
                 )
-
-            if answer:
-                answer = answer.lstrip("\n").lstrip("\n")
-                short_answer = self.ellipsis(answer, 30)
-
-                self.add_item(
-                    title="Copy to clipboard",
-                    subtitle=f"Answer: {short_answer}",
-                    method=self.copy_answer,
-                    parameters=[answer],
-                )
-
-                self.add_item(
-                    title="Open in text editor",
-                    subtitle=f"Answer: {short_answer}",
-                    method=self.open_in_editor,
-                    parameters=[filename, answer],
-                )
-
 
         else:
             self.add_item(
@@ -101,39 +115,6 @@ class ChatGPT(Flox):
                 subtitle=f"Current model: {self.model}",
             )
         return
-
-    def send_prompt(
-        self, prompt: str, system_message: str
-    ) -> Tuple[str, datetime, datetime]:
-        """
-        Query the Gemini end-point
-        """
-
-        prompt_timestamp = datetime.now()
-        result = ""
-
-        messages = [
-            SystemMessage(content=system_message),
-            HumanMessage(content=prompt),
-        ]
-
-        # logging.debug(f"Sending request with data: {messages}") FIXME
-        try:
-            for chunk in self.llm.stream(messages):
-                if hasattr(chunk, "content"):
-                    result += chunk.content
-        except UnicodeEncodeError as e:
-            logging.error(f"Gemini API error: {e}")
-            self.add_item(
-                title="Gemini API Error",
-                subtitle=str(e),
-            )
-            return "", prompt_timestamp, datetime.now()
-
-        logging.debug(f"Response: {result}")
-        answer_timestamp = datetime.now()
-
-        return result, prompt_timestamp, answer_timestamp
 
     def save_conversation(
         self,
@@ -146,7 +127,7 @@ class ChatGPT(Flox):
         filename = f"Conversations '{keyword}' keyword.txt"
         formatted_prompt_timestamp = prompt_timestamp.strftime("%Y-%m-%d %H:%M:%S")
         formatted_answer_timestamp = answer_timestamp.strftime("%Y-%m-%d %H:%M:%S")
-        new_content = f"[{formatted_prompt_timestamp}] User: {prompt}\n[{formatted_answer_timestamp}] ChatGPT: {answer}\n\n"  # noqa: E501
+        new_content = f"[{formatted_prompt_timestamp}] User: {prompt}\n[{formatted_answer_timestamp}] Gemini: {answer}\n\n"  # noqa: E501
 
         if os.path.exists(filename):
             try:
@@ -242,4 +223,4 @@ class ChatGPT(Flox):
 
 
 if __name__ == "__main__":
-    ChatGPT()
+    Gemini()
