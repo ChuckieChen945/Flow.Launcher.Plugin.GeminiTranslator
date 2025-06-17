@@ -12,13 +12,53 @@ import pyperclip  # noqa: E402
 from typing import Tuple, Optional
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
-
+import difflib
 
 PROXIES = {
     "http": os.environ.get("HTTP_PROXY", ""),
     "https": os.environ.get("HTTPS_PROXY", ""),
 }
 
+def lcs_diff_align(a: str, b: str):
+    sm = difflib.SequenceMatcher(None, a, b)
+    lcs = []
+
+    a_aligned = []
+    b_aligned = []
+
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            a_aligned.append(a[i1:i2])
+            b_aligned.append(b[j1:j2])
+        elif tag == "delete":
+            a_aligned.append(a[i1:i2])
+            b_aligned.append("  " * (i2 - i1))
+        elif tag == "insert":
+            a_aligned.append("  " * (j2 - j1))
+            b_aligned.append(b[j1:j2])
+        elif tag == "replace":
+            a_seg = f"({a[i1:i2]})"
+            b_seg = f"({b[j1:j2]})"
+            len_a = len(a_seg)
+            len_b = len(b_seg)
+            max_len = max(len_a, len_b)
+
+            # 计算左右补空格数
+            # 总共补 max_len - 当前长度 个空格，均分左右，多余放右侧
+            def pad_center(s, target_len):
+                diff = target_len - len(s)
+                left_pad = diff // 2
+                right_pad = diff - left_pad
+                return "  " * left_pad + s + "  " * right_pad
+
+            a_aligned.append(pad_center(a_seg, max_len))
+            b_aligned.append(pad_center(b_seg, max_len))
+
+    result = ''
+    result += "".join(a_aligned)
+    result += '\n'
+    result += "".join(b_aligned)
+    return result
 
 class Gemini(Flox):
     def __init__(self):
@@ -28,7 +68,6 @@ class Gemini(Flox):
         self.default_system_prompt = self.settings.get("default_prompt")
         self.save_conversation_setting = self.settings.get("save_conversation")
         self.log_level = self.settings.get("log_level")
-        # self.api_endpoint = self.settings.get("api_endpoint")
         self.logger_level(self.log_level)
 
         try:
@@ -66,10 +105,6 @@ class Gemini(Flox):
         if query.endswith(self.prompt_stop):
             prompt, prompt_keyword, system_message = self.split_prompt(query)
 
-            # answer, prompt_timestamp, answer_timestamp = self.send_prompt(
-            #     prompt, system_message
-            # )
-
             prompt_timestamp = datetime.now()
             result = ""
             # answer_timestamp = prompt_timestamp
@@ -80,20 +115,16 @@ class Gemini(Flox):
             messages_str = "\n".join([f"{type(m).__name__}: {m.content}" for m in messages])
             logging.debug(f"Sending request with data: {messages_str}")
             try:
-                for chunk in self.llm.stream(messages):
-                    if hasattr(chunk, "content"):
-                        result += chunk.content
-
-                        short_answer = self.ellipsis(result, 30)
-                        # FIXME: has no attribute 'clear_items'
-                        # self.clear_items()
-                        self.add_item(
-                            title="Streaming response (press Enter to copy)",
-                            subtitle=short_answer,
-                            method=self.copy_answer,
-                            parameters=[result],
-                        )
+                response = self.llm.invoke(messages)
+                result = response.content if hasattr(response, "content") else str(response)
+                self.add_item(
+                    title=result,
+                    subtitle=lcs_diff_align(query,result),
+                    method=self.copy_answer,
+                    parameters=[result],
+                )
                 answer_timestamp = datetime.now()
+
             except Exception as e:
                 logging.error(f"Gemini API error during stream: {e}")
                 self.add_item(
