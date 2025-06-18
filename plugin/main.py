@@ -6,8 +6,6 @@ import logging
 from datetime import datetime
 from flox import Flox  # noqa: E402
 import webbrowser  # noqa: E402
-import requests  # noqa: E402
-import json  # noqa: E402
 import pyperclip  # noqa: E402
 from typing import Tuple, Optional
 from langchain_google_genai import ChatGoogleGenerativeAI
