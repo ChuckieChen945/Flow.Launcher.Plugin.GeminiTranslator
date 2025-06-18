@@ -1,0 +1,117 @@
+// Legacy code.
+// The goal is to simplify vscode interface as much as possible.
+// So I can use it as a diff viewer.
+// {
+//     "diffEditor.renderSideBySide": false,
+
+//     "editor.quickSuggestions": {
+//         "other": "off",
+//         "comments": "off",
+//         "strings": "off"
+//     },
+//     "editor.suggestOnTriggerCharacters": false,
+//     "editor.wordBasedSuggestions": "off",
+//     "editor.parameterHints.enabled": false,
+
+//     // 禁用所有扩展的自动启用
+//     "extensions.ignoreRecommendations": true,
+//     "workbench.statusBar.visible": false, // 下方状态栏
+//     "workbench.sideBar.location": "left", // 保持默认
+//     "workbench.startupEditor": "none", // 启动不显示欢迎页
+//     "workbench.editor.showTabs": "none", // 隐藏编辑器顶部标签页
+//     "workbench.editor.decorations.badges": false,
+//     "workbench.editor.decorations.colors": false,
+//     "workbench.editor.enablePreview": false,
+//     "workbench.editor.enablePreviewFromQuickOpen": false,
+//     "workbench.editor.wrapTabs": false,
+//     "breadcrumbs.enabled": false, // 面包屑路径导航
+//     "editor.minimap.enabled": false, // 右侧缩略图
+//     "editor.renderLineHighlight": "none",
+//     "editor.scrollbar.vertical": "hidden",
+//     "editor.scrollbar.horizontal": "hidden",
+//     "editor.glyphMargin": false,
+//     "editor.folding": false,
+//     "editor.lineNumbers": "off",
+//     "editor.renderWhitespace": "none",
+//     "editor.renderControlCharacters": false,
+
+//     // 隐藏右下角问题提示
+//     "problems.showCurrentInStatus": false,
+
+//     // 文件资源管理器隐藏可选项
+//     "explorer.openEditors.visible": 1,
+//     "explorer.compactFolders": false,
+
+//     "editor.hover.enabled": false,
+
+//     // 隐藏调试工具栏（如果你在使用调试功能）
+//     "debug.toolBarLocation": "hidden",
+
+//     // 隐藏编辑器顶部的Tab栏（如果只有一个Tab，或在某些情况下）
+//     "workbench.editor.limit.enabled": true,
+//     "workbench.editor.limit.perEditorGroup": true,
+//     "workbench.editor.limit.value": 1,
+
+//     // 隐藏查找小部件
+//     "editor.find.addExtraSpaceOnTop": false, // 这个不是完全隐藏，但会减少空间占用
+//     // 无法直接通过设置隐藏查找小部件，通常需要通过快捷键来关闭。
+
+//     // 隐藏概览尺（代码右侧的颜色条）
+//     "editor.overviewRulerBorder": false,
+
+//     // 移除所有概览尺的颜色规则，以达到隐藏效果
+//     "editor.tokenColorCustomizations": {
+//         "textMateRules": [
+//             {
+//                 "scope": [
+//                     "error",
+//                     "warning",
+//                     "info",
+//                     "hint",
+//                     "unnecessary",
+//                     "deprecated",
+//                     // "comment",
+//                     // "string",
+//                     "keyword",
+//                     // "variable",
+//                     "function",
+//                     "class",
+//                     "entity",
+//                     "markup.changed",
+//                     "markup.inserted",
+//                     "markup.deleted",
+//                     "source.diff",
+//                     "source.fixme"
+//                 ],
+//                 "settings": {
+//                     "foreground": "#00000000" // 将所有概览尺颜色设置为透明
+//                 }
+//             }
+//         ]
+//     },
+//     "workbench.activityBar.location": "hidden",
+
+//     // 资源管理器：不显示“打开的编辑器”面板，不自动展开
+//     "explorer.autoReveal": false,
+
+//     // 编辑器：关闭所有多余装饰、缩略图、折叠、光标提示等
+//     "editor.codeLens": false,
+//     "editor.guides.indentation": false,
+//     "editor.guides.highlightActiveIndentation": false,
+//     "editor.matchBrackets": "never",
+//     "editor.guides.highlightActiveBracketPair": false,
+//     "editor.inlayHints.enabled": "off",
+
+//     // 手动更新，关闭所有自动提示
+//     "editor.hideCursorInOverviewRuler": true,
+//     "color-highlight.markRuler": false,
+//     "workbench.tree.renderIndentGuides": "none",
+//     "explorer.decorations.colors": false,
+//     "editor.bracketPairColorization.enabled": false,
+//     "editor.guides.bracketPairsHorizontal": false,
+//     "editor.showFoldingControls": "never",
+//     "workbench.layoutControl.type": "menu",
+//     "workbench.layoutControl.enabled": false,
+//     "window.title": " ",
+//     "workbench.editor.empty.hint": "hidden"
+// }
