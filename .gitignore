@@ -131,5 +131,3 @@ dmypy.json
 system_messages.csv
 temp_text.txt
 Conversations *.txt
-
-output.mp3
